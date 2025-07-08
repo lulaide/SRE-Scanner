@@ -1,1 +1,4 @@
 questionary
+pydantic_settings
+openai
+httpx
