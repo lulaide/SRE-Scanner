@@ -2,3 +2,4 @@ questionary
 pydantic_settings
 openai
 httpx
+python-nmap
