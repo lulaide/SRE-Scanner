@@ -19,16 +19,15 @@ from asyncio.subprocess import Process
 
 # 定义需要检测的工具列表
 TOOLS_TO_CHECK = [
+    "amass",
+    "sublist3r",
     "nmap",
     "sqlmap",
     "hydra",
+    "dirb",
     "ffuf",
-    "metasploit-framework", # Metasploit
-    "john",               # John the Ripper
-    "hashcat",
-    "burpsuite",
-    "wireshark",
-    "aircrack-ng",
+    "msfconsole",
+    "hashcat"
 ]
 
 async def check_tool_availability(tool_name: str) -> tuple[str, str | None]:
