@@ -1,0 +1,6 @@
+[submodule "tools/module_sqlmap"]
+	path = tools/module_sqlmap
+	url = https://github.com/sqlmapproject/sqlmap.git
+[submodule "tools/module_oneforall"]
+	path = tools/module_oneforall
+	url = https://github.com/shmilylty/OneForAll.git
