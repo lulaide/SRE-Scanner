@@ -4,3 +4,6 @@
 [submodule "tools/module_oneforall"]
 	path = tools/module_oneforall
 	url = https://github.com/shmilylty/OneForAll.git
+[submodule "tools/module_sstimap"]
+	path = tools/module_sstimap
+	url = https://github.com/vladko312/SSTImap.git
