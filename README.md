@@ -13,10 +13,10 @@ SRE-Scanner 是一个用于检测系统中常见渗透测试工具的脚本。�
 | **功能项** | **相关工具** |
 | -----| ----- |
 | 资产探寻| `nmap`, `dirb`, `ffuf`|
-| 子域扫描| `amass`, `sublist3r` |
+| 子域扫描| `oneforall` |
 | 端口服务识别 | `nmap` |
 | 服务密码爆破 | `hydra`|
-| 自动漏洞扫描| `sqlmap`, `msfconsole` |
+| 自动漏洞扫描| `msfconsole` |
 
 ## 环境准备
 
@@ -34,10 +34,11 @@ conda activate SRE-Scanner
 pip install -r requirements.txt
 ```
 
-- venv 环境
+- uv 环境
 
 ```bash
-python3 -m venv SRE-Scanner
-source SRE-Scanner/bin/activate
-pip install -r requirements.txt
+uv python install 3.10
+uv venv
+uv activate SRE-Scanner
+uv pip install -r requirements.txt
 ```
