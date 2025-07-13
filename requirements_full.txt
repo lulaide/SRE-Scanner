@@ -5,6 +5,7 @@ openai
 httpx
 python-nmap
 rich
+click
 
 # OneForAll
 beautifulsoup4==4.11.1
