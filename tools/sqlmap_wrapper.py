@@ -14,6 +14,8 @@ class SqlmapExecutionError(Exception):
 class Sqlmap:
     def __init__(self):
         self.sqlmap_api_path = 'tools/module_sqlmap/sqlmapapi.py'
+        self.host = '127.0.0.1'
+        self.port = 8775
 
     async def check(self) -> bool:
         process = await asyncio.create_subprocess_exec(
@@ -27,10 +29,8 @@ class Sqlmap:
             return False
         return True
 
-    async def start(self, host='127.0.0.1', port=8775):
+    async def start(self) -> Optional[Process]:
         """启动 sqlmapapi.py 服务"""
-        self.host = host
-        self.port = port
         self.process: Optional[Process] = None
         self.cmd = [
             'python', self.sqlmap_api_path, '-s', '--host', self.host, '--port', str(self.port)
