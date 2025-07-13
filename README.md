@@ -20,10 +20,16 @@ SRE-Scanner 是一个用于检测系统中常见渗透测试工具的脚本。�
 
 ## 环境准备
 
+- 克隆仓库和子模块
+
+```bash
+git clone --recurse-submodules https://github.com/lulaide/SRE-Scanner.git
+```
+
 - Conda 环境
 
 ```bash
-conda create --name SRE-Scanner python=3.12
+conda create --name SRE-Scanner python=3.10
 conda activate SRE-Scanner
 pip install -r requirements.txt
 ```
