@@ -35,15 +35,13 @@ class Sqlmap:
         self.cmd = [
             'python', self.sqlmap_api_path, '-s', '--host', self.host, '--port', str(self.port)
         ]
-        print(f"正在启动 [green]sqlmap[/green] API 服务，地址: {self.host}:{self.port}...")
-        print(f"执行命令: {' '.join(self.cmd)}")
+        print(f"[grey54]  启动 sqlmap API 服务，地址: {self.host}:{self.port}...")
+        print(f"[grey54]  执行命令: {' '.join(self.cmd)}")
         self.process = await asyncio.create_subprocess_exec(
             *self.cmd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
-
-        print("sqlmap API 已启动")
         return self.process
 
     async def stop(self):
@@ -86,7 +84,7 @@ class Sqlmap:
                 if not task_id:
                     raise SqlmapExecutionError("创建 sqlmap 任务失败。", "未返回 taskid")
 
-                print(f"已创建 sqlmap 任务: {task_id}")
+                # print(f"已创建 sqlmap 任务: {task_id}")
 
                 # 2. 设置扫描选项并启动扫描
                 scan_options = options or {}
@@ -99,8 +97,6 @@ class Sqlmap:
                 if not start_scan_resp.json().get("success"):
                     raise SqlmapExecutionError(f"任务 {task_id} 启动扫描失败。", "API 返回 success: false")
 
-                print(f"开始扫描 URL: {url}")
-
                 # 3. 轮询扫描状态
                 while True:
                     await asyncio.sleep(5)
@@ -109,7 +105,7 @@ class Sqlmap:
                     status_data = status_resp.json()
                     if status_data.get("status") == "terminated":
                         break
-                    print(f"任务 {task_id} 正在扫描中...")
+                    print(f"[grey]任务 {task_id} 正在扫描中...[/grey]")
 
                 # 4. 获取扫描结果
                 data_resp = await client.get(f"{api_url}/scan/{task_id}/data")
@@ -160,7 +156,7 @@ class Sqlmap:
                 # 5. 清理任务
                 if task_id:
                     await client.get(f"{api_url}/scan/{task_id}/delete")
-                    print(f"已清理 sqlmap 任务: {task_id}")
+                    # print(f"已清理 sqlmap 任务: {task_id}")
 async def main():
     sqlmap_api = Sqlmap()  # 创建 sqlmap API 实例
     try:

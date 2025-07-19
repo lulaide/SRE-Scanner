@@ -56,7 +56,7 @@ class SSTImap:
         if extra_args:
             cmd.extend(extra_args)
 
-        print(f"🚀 执行命令: {' '.join(cmd)}")
+        print(f"[grey54]  执行命令: {' '.join(cmd)}")
 
         process = await asyncio.create_subprocess_exec(
             *cmd,

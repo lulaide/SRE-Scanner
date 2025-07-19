@@ -3,25 +3,12 @@ import asyncio
 import os
 from urllib.parse import urlparse
 from rich import print
+import json
+from httpx import AsyncClient
 
 sqlmap_scanner = sqlmap_wrapper.Sqlmap()
 sstimap_scanner = sstimap_wrapper.SSTImap()
 oneforall_scanner = oneforall_wrapper.OneForAll()
-
-# 异步启动和检查所有依赖的服务
-async def initialize_scanners():
-    """启动所有需要后台服务的扫描器，例如 sqlmap API。"""
-    print("正在初始化扫描器...")
-    await sqlmap_scanner.start()
-    # 可以在这里添加其他需要启动的服务
-    print("扫描器初始化完成。")
-
-async def shutdown_scanners():
-    """停止所有后台服务。"""
-    print("正在关闭扫描器服务...")
-    await sqlmap_scanner.stop()
-    print("扫描器服务已关闭。")
-
 
 
 all_tools = [
@@ -122,6 +109,53 @@ all_tools = [
                 "required": ["target_host"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "scan_port_scanning",
+            "description": "使用 nmap 对指定的目标进行端口扫描，发现开放端口和运行的服务。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "target": {
+                        "type": "string",
+                        "description": "要扫描的目标主机或IP地址，例如 '192.168.1.1' 或 'example.com'。"
+                    },
+                    "ports": {
+                        "type": "string",
+                        "description": "要扫描的端口范围，例如 '1-1000' 或 '22,80,443'。如果未提供，将使用默认的常用端口。"
+                    },
+                    "scan_type": {
+                        "type": "string",
+                        "description": "扫描类型：'tcp' (TCP扫描，默认), 'udp' (UDP扫描), 'syn' (SYN扫描), 'fin' (FIN扫描)等。",
+                        "enum": ["tcp", "udp", "syn", "fin", "xmas", "null", "ack"]
+                    },
+                    "service_detection": {
+                        "type": "boolean",
+                        "description": "是否启用服务版本检测。默认为 True。"
+                    }
+                },
+                "required": ["target"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "fetch_url_content",
+            "description": "使用 httpx 异步获取指定 URL 的内容。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "要获取内容的目标 URL，例如 'http://example.com'。"
+                    }
+                },
+                "required": ["url"]
+            }
+        }
     }
 ]
 
@@ -174,7 +208,6 @@ async def scan_sql_injection(target_url, data=None, options=None):
     
     # sqlmap 需要特殊处理：启动 API 服务
     if not hasattr(sqlmap_scanner, 'process') or sqlmap_scanner.process is None:
-        print("启动 SQLMap API 服务...")
         await sqlmap_scanner.start()
         await asyncio.sleep(5)  # 等待服务启动
     
@@ -210,10 +243,117 @@ async def scan_subdomain_enumeration(target_host, extra_args=None):
         extra_args=extra_args
     )
 
+async def scan_port_scanning(target, ports=None, scan_type="tcp", service_detection=False):
+    """使用 python-nmap 进行端口扫描"""
+    output_dir = get_output_dir(target)
+    
+    try:
+        # 创建 nmap 对象
+        nm = nmap.PortScanner()
+        
+        # 构建扫描参数
+        nmap_args = ""
+        
+        # 设置扫描类型
+        if scan_type == "tcp":
+            nmap_args += "-sT "
+        elif scan_type == "syn":
+            nmap_args += "-sS "
+        elif scan_type == "udp":
+            nmap_args += "-sU "
+        elif scan_type == "fin":
+            nmap_args += "-sF "
+        elif scan_type == "xmas":
+            nmap_args += "-sX "
+        elif scan_type == "null":
+            nmap_args += "-sN "
+        elif scan_type == "ack":
+            nmap_args += "-sA "
+        
+        # 激进扫描模式
+        
+        if service_detection:
+            nmap_args += "-sV "
+        
+        # 设置端口范围
+        port_range = ports or "1-65535"
+        
+        print(f"[grey54]  开始对 {target} 进行端口扫描...")
+        print(f"[grey54]  扫描参数: {nmap_args.strip()}")
+        print(f"[grey54]  端口范围: {port_range}")
+        
+        # 执行扫描
+        scan_result = nm.scan(target, port_range, arguments=nmap_args.strip())
+        
+        # 处理扫描结果
+        results = []
+        for host in nm.all_hosts():
+            host_info = {
+                "host": host,
+                "hostname": nm[host].hostname() if nm[host].hostname() else "",
+                "state": nm[host].state(),
+                "open_ports": [],
+                "os_info": {}
+            }
+            
+            # 获取开放端口信息
+            for protocol in nm[host].all_protocols():
+                ports_list = nm[host][protocol].keys()
+                for port in sorted(ports_list):
+                    port_state = nm[host][protocol][port]['state']
+                    if port_state == 'open':
+                        port_info = {
+                            "port": port,
+                            "protocol": protocol,
+                            "state": port_state,
+                            "service": nm[host][protocol][port].get('name', ''),
+                            "version": nm[host][protocol][port].get('version', ''),
+                            "product": nm[host][protocol][port].get('product', ''),
+                            "extrainfo": nm[host][protocol][port].get('extrainfo', '')
+                        }
+                        host_info["open_ports"].append(port_info)
+            
+            results.append(host_info)
+        
+        # 保存结果到文件
+        output_file = os.path.join(output_dir, f"nmap_scan.txt")
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(results, f, indent=4, ensure_ascii=False)
+        
+        print(f"[grey54]  扫描完成！结果已保存到: {output_file}")
+        return results
+        
+    except Exception as e:
+        print(f"[red]Nmap 扫描出错: {e}[/red]")
+        return []
+
+async def fetch_url_content(url):
+    """使用 httpx 异步获取 URL 内容"""
+    async with AsyncClient() as client:
+        try:
+            response = await client.get(url)
+            if response.status_code == 200:
+                return response.text
+            else:
+                print(f"[red]请求失败，状态码: {response.status_code}[/red]")
+                return None
+        except Exception as e:
+            print(f"[red]请求出错: {e}[/red]")
+            return None
+
 # 将函数名映射到实际的异步扫描函数
 function_map = {
     "scan_directory_fuzzing": scan_directory_fuzzing,
     "scan_sql_injection": scan_sql_injection,
     "scan_template_injection": scan_template_injection,
     "scan_subdomain_enumeration": scan_subdomain_enumeration,
+    "scan_port_scanning": scan_port_scanning,
+    "fetch_url_content": fetch_url_content
 }
+
+
+if __name__ == "__main__":
+    async def main():
+        result = await scan_port_scanning('192.168.100.200', ports='1-65535', scan_type='tcp', service_detection=False)
+        print(result)
+    asyncio.run(main())

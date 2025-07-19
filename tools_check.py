@@ -146,5 +146,5 @@ async def checker():
             print("\n🔧 安装完成!")
 
     # 检查工具的 wrapper 是否可用
-    print("  正在检查工具的 wrapper 是否可用...")
+    print("[grey54]  正在检查工具的 wrapper 是否可用...")
     await check_wrappers()
