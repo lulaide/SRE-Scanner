@@ -7,3 +7,6 @@
 [submodule "tools/module_sstimap"]
 	path = tools/module_sstimap
 	url = https://github.com/vladko312/SSTImap.git
+[submodule "tools/module_WebTree"]
+	path = tools/module_WebTree
+	url = https://github.com/lulaide/WebTree.git
