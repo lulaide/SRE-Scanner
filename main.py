@@ -59,7 +59,7 @@ def main(website, no_check, url, host):
                 TextColumn("{task.description}"),
                 ) as progress:
                 result = asyncio.run(website_full_analysis(progress, website))
-                print(f"[green]🗸[/green] 网站自动扫描完成。")
+                print(f"[green]✔️[/green] 网站自动扫描完成。")
         elif scan_type == "URL注入分析":
             url = questionary.text("请输入 URL 端点 (例如: http://example.com/?name=1):").ask()
             with Progress(
@@ -67,7 +67,7 @@ def main(website, no_check, url, host):
                 TextColumn("{task.description}"),
             ) as progress:
                 result = asyncio.run(url_injection_analysis(progress, url))
-                print(f"[green]🗸[/green] 注入分析完成。")
+                print(f"[green]✔️[/green] 注入分析完成。")
         elif scan_type == "主机扫描":
             host = questionary.text("请输入主机地址 (例如: example.com):").ask()
             with Progress(
@@ -75,7 +75,7 @@ def main(website, no_check, url, host):
                 TextColumn("{task.description}"),
             ) as progress:
                 result = asyncio.run(generate_domain_analysis(progress, host))
-                print(f"[green]🗸[/green] 主机 {host} 扫描完成。")
+                print(f"[green]✔️[/green] 主机 {host} 扫描完成。")
 
 
     else:
@@ -87,17 +87,17 @@ def main(website, no_check, url, host):
                 if not no_check:
                     asyncio.run(checker())
                 result = asyncio.run(website_full_analysis(progress, website))
-                print(f"[green]🗸[/green] 网站自动扫描完成。")
+                print(f"[green]✔️[/green] 网站自动扫描完成。")
             elif url:
                 if not no_check:
                     asyncio.run(checker())
                 result = asyncio.run(url_injection_analysis(progress, url))
-                print(f"[green]🗸[/green] 注入分析完成。")
+                print(f"[green]✔️[/green] 注入分析完成。")
             elif host:
                 if not no_check:
                     asyncio.run(checker())
                 result = asyncio.run(generate_domain_analysis(progress, host))
-                print(f"[green]🗸[/green] 主机 {host} 扫描完成。")
+                print(f"[green]✔️[/green] 主机 {host} 扫描完成。")
 
     if result:
         print(result)

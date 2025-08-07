@@ -29,7 +29,7 @@ git clone --recurse-submodules https://github.com/lulaide/SRE-Scanner.git
 - 更新子模块
 
 ```bash
-git submodule update --recursive --remote
+git submodule update --recursive --init
 ```
 
 - Conda 环境

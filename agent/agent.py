@@ -48,7 +48,7 @@ async def function_call(progress: Progress, messages: list, tools: list) -> str:
             
             for i, tool_call in enumerate(tool_calls):
                 result = results[i]
-                print(f"[green]🗸[/green] 函数 {tool_call.function.name} 执行完成")
+                print(f"[green]✔️[/green] 函数 {tool_call.function.name} 执行完成")
                 progress.update(task_id, description=f"函数 {tool_call.function.name} 完成")
                 messages.append({
                     "role": "tool",
@@ -89,9 +89,34 @@ async def generate_domain_analysis(progress: Progress, domain: str) -> str:
 async def website_full_analysis(progress: Progress, website: str) -> str:
     """
     对整个网站进行全面扫描分析。
+    使用 WebTree 工具进行网站漏洞扫描。
     """
-    # TODO
-    return ""
+    from tools.webtree_wrapper import webtree
+    
+    # 添加扫描任务到进度条
+    task = progress.add_task(f"正在使用 WebTree 扫描网站: {website}", total=None)
+    
+    try:
+        # 检查工具是否可用
+        if not await webtree.check():
+            progress.update(task, description="WebTree 工具检查失败")
+            return "❌ WebTree 工具不可用，请检查 Node.js 安装和工具配置"
+        
+        progress.update(task, description=f"正在扫描 {website}...")
+        
+        # 执行扫描，启用 POC 检测和详细输出
+        result = await webtree.scan(website, use_poc=True, use_detail=False, timeout=300)
+        
+        if result:
+            progress.update(task, description="WebTree 扫描完成")
+            return f"✅ WebTree 网站扫描完成\n\n扫描结果:\n{result}"
+        else:
+            progress.update(task, description="WebTree 扫描完成但无结果")
+            return f"⚠️ WebTree 扫描完成，但未发现明显漏洞或问题\n目标: {website}"
+            
+    except Exception as e:
+        progress.update(task, description="WebTree 扫描失败")
+        return f"❌ WebTree 扫描失败: {str(e)}\n目标: {website}"
 
 if __name__ == "__main__":
     async def test():

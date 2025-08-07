@@ -72,19 +72,19 @@ def install_tool(tool_name: str) -> None:
         
         if process.returncode != 0:
             # 如果安装失败，打印错误信息
-            print(f"[red]🗴[/red] 安装 {tool_name} 失败。")
+            print(f"[red]❌[/red] 安装 {tool_name} 失败。")
             error_message = process.stderr.strip()
             if error_message:
-                print(f"[red]🗴[/red] 错误详情: {error_message}")
+                print(f"[red]❌[/red] 错误详情: {error_message}")
             return  # 安装失败，提前返回
 
     except FileNotFoundError:
-        print("[red]🗴[/red] 命令 'sudo' 或 'apt-get' 未找到。请确保您在基于 Debian/Ubuntu 的系统上运行，并已安装 sudo。")
+        print("[red]❌[/red] 命令 'sudo' 或 'apt-get' 未找到。请确保您在基于 Debian/Ubuntu 的系统上运行，并已安装 sudo。")
         return
     except Exception as e:
         print(f"安装 '{tool_name}' 时发生意外错误: {e}")
         return
-    print(f"[green]🗸[/green] {tool_name} 安装完成！")
+    print(f"[green]✔️[/green] {tool_name} 安装完成！")
 
 async def check_wrappers():
     """
@@ -93,15 +93,16 @@ async def check_wrappers():
     tasks = [
         sstimap_wrapper.SSTImap().check(),
         oneforall_wrapper.OneForAll().check(),
-        sqlmap_wrapper.Sqlmap().check()
+        sqlmap_wrapper.Sqlmap().check(),
+        webtree_wrapper.webtree.check()
     ]
     results = await asyncio.gather(*tasks)
     
     for result in results:
         if not result:
-            print("[red]🗴[/red] 某些工具的 wrapper 不可用，请检查路径或安装状态。")
+            print("[red]❌[/red] 某些工具的 wrapper 不可用，请检查路径或安装状态。")
             return False
-    print("[green]🗸[/green] 所有工具的 wrapper 均可用。")
+    print("[green]✔️[/green] 所有工具的 wrapper 均可用。")
     return True
 
 async def checker():
@@ -123,13 +124,13 @@ async def checker():
             
     # 打印找到的工具
     if found_tools:
-        print("[green]🗸[/green] 找到以下工具:")
+        print("[green]✔️[/green] 找到以下工具:")
         for tool, path in found_tools:
             print(f"  - {tool:<25} -> 路径: {path}")
 
     # 打印未找到的工具
     if not_found_tools:
-        print("\n[red]🗴[/red] 未找到以下工具:")
+        print("\n[red]❌[/red] 未找到以下工具:")
         for tool in not_found_tools:
             print(f"  - {tool}")
         # print("\n💡 提示: 请确保这些工具已正确安装并已将其路径添加到系统的 PATH 环境变量中。")
