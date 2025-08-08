@@ -38,7 +38,14 @@ console = Console()
     is_flag=True,
     help='启用POC检测（仅用于网站扫描）'
 )
-def main(website, no_check, url, host, poc):
+@click.option(
+    '-m',
+    '--max-links',
+    type=int,
+    default=100,
+    help='最大访问链接数量限制 (默认: 100)'
+)
+def main(website, no_check, url, host, poc, max_links):
     'main.py https://example.com/ 对一个网站进行完整扫描'
     result = None
     
@@ -64,7 +71,7 @@ def main(website, no_check, url, host, poc):
                 SpinnerColumn(),
                 TextColumn("{task.description}"),
                 ) as progress:
-                result = asyncio.run(website_full_analysis(progress, website, use_poc_interactive))
+                result = asyncio.run(website_full_analysis(progress, website, use_poc_interactive, max_links))
                 print(f"[green]✔️[/green] 网站自动扫描完成。")
         elif scan_type == "URL注入分析":
             url = questionary.text("请输入 URL 端点 (例如: http://example.com/?name=1):").ask()
@@ -92,7 +99,7 @@ def main(website, no_check, url, host, poc):
             if website:
                 if not no_check:
                     asyncio.run(checker())
-                result = asyncio.run(website_full_analysis(progress, website, poc))
+                result = asyncio.run(website_full_analysis(progress, website, poc, max_links))
                 print(f"[green]✔️[/green] 网站自动扫描完成。")
             elif url:
                 if not no_check:

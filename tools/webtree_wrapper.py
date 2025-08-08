@@ -61,6 +61,7 @@ class WebTree:
         use_poc: bool = False,
         use_detail: bool = False,
         concurrency: int = 10,
+        max_links: int = 100,
         output_file: Optional[str] = None,
         timeout: int = 300
     ) -> Optional[str]:
@@ -72,6 +73,7 @@ class WebTree:
             use_poc: 是否使用POC检测
             use_detail: 是否输出详细的POC执行结果（需要use_poc=True）
             concurrency: 并发请求数
+            max_links: 最大访问链接数量限制
             output_file: 输出文件路径（可选）
             timeout: 超时时间（秒）
             
@@ -85,6 +87,9 @@ class WebTree:
             # 添加选项
             if concurrency != 10:
                 cmd_args.extend(["-c", str(concurrency)])
+            
+            if max_links != 100:
+                cmd_args.extend(["-m", str(max_links)])
             
             if use_poc:
                 cmd_args.append("--poc")
@@ -165,9 +170,10 @@ class WebTree:
         Args:
             target_url: 目标网站URL
             options: 扫描选项字典，支持的选项：
-                - poc: 是否使用POC检测 (默认: True)
+                - poc: 是否使用POC检测 (默认: False)
                 - detail: 是否输出详细的POC执行结果 (默认: False)
                 - concurrency: 并发请求数 (默认: 10)
+                - max_links: 最大访问链接数量限制 (默认: 100)
                 - output_file: 输出文件路径 (可选)
                 - timeout: 超时时间 (默认: 300)
             
@@ -180,6 +186,7 @@ class WebTree:
         use_poc = options.get('poc', False)
         use_detail = options.get('detail', False)
         concurrency = options.get('concurrency', 10)
+        max_links = options.get('max_links', 100)
         output_file = options.get('output_file')
         timeout = options.get('timeout', 300)
         
@@ -188,6 +195,7 @@ class WebTree:
             use_poc=use_poc, 
             use_detail=use_detail,
             concurrency=concurrency,
+            max_links=max_links,
             output_file=output_file,
             timeout=timeout
         )

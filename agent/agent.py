@@ -86,7 +86,7 @@ async def generate_domain_analysis(progress: Progress, domain: str) -> str:
     result = await function_call(progress, messages, tools=domain_tools)
     return result
 
-async def website_full_analysis(progress: Progress, website: str, use_poc: bool = False) -> str:
+async def website_full_analysis(progress: Progress, website: str, use_poc: bool = False, max_links: int = 100) -> str:
     """
     对整个网站进行全面扫描分析。
     使用 WebTree 工具进行网站漏洞扫描。
@@ -95,6 +95,7 @@ async def website_full_analysis(progress: Progress, website: str, use_poc: bool 
         progress: 进度条对象
         website: 目标网站URL
         use_poc: 是否启用POC检测
+        max_links: 最大访问链接数量限制
     """
     from tools.webtree_wrapper import webtree
     
@@ -109,8 +110,8 @@ async def website_full_analysis(progress: Progress, website: str, use_poc: bool 
         
         progress.update(task, description=f"正在扫描 {website}...")
         
-        # 执行扫描，根据参数决定是否启用POC检测
-        result = await webtree.scan(website, use_poc=use_poc, use_detail=False, timeout=300)
+        # 执行扫描，根据参数决定是否启用POC检测和设置链接数量限制
+        result = await webtree.scan(website, use_poc=use_poc, use_detail=False, max_links=max_links, timeout=300)
         
         if result:
             progress.update(task, description="WebTree 扫描完成")
