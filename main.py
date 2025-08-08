@@ -33,7 +33,12 @@ console = Console()
     required=False,
     help='指定主机进行扫描, 例如: example.com',
 )
-def main(website, no_check, url, host):
+@click.option(
+    '--poc',
+    is_flag=True,
+    help='启用POC检测（仅用于网站扫描）'
+)
+def main(website, no_check, url, host, poc):
     'main.py https://example.com/ 对一个网站进行完整扫描'
     result = None
     
@@ -53,12 +58,13 @@ def main(website, no_check, url, host):
 
         if scan_type == "网站扫描":
             website = questionary.text("请输入网站地址 (例如: https://example.com):").ask()
+            use_poc_interactive = questionary.confirm("是否启用POC检测？").ask()
             # 如果提前启动 Process 会导致 Questionary 无法正常工作
             with Progress(
                 SpinnerColumn(),
                 TextColumn("{task.description}"),
                 ) as progress:
-                result = asyncio.run(website_full_analysis(progress, website))
+                result = asyncio.run(website_full_analysis(progress, website, use_poc_interactive))
                 print(f"[green]✔️[/green] 网站自动扫描完成。")
         elif scan_type == "URL注入分析":
             url = questionary.text("请输入 URL 端点 (例如: http://example.com/?name=1):").ask()
@@ -86,7 +92,7 @@ def main(website, no_check, url, host):
             if website:
                 if not no_check:
                     asyncio.run(checker())
-                result = asyncio.run(website_full_analysis(progress, website))
+                result = asyncio.run(website_full_analysis(progress, website, poc))
                 print(f"[green]✔️[/green] 网站自动扫描完成。")
             elif url:
                 if not no_check:

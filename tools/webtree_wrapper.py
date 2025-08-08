@@ -58,7 +58,7 @@ class WebTree:
     async def scan(
         self,
         target_url: str,
-        use_poc: bool = True,
+        use_poc: bool = False,
         use_detail: bool = False,
         concurrency: int = 10,
         output_file: Optional[str] = None,
@@ -177,7 +177,7 @@ class WebTree:
         if options is None:
             options = {}
         
-        use_poc = options.get('poc', True)
+        use_poc = options.get('poc', False)
         use_detail = options.get('detail', False)
         concurrency = options.get('concurrency', 10)
         output_file = options.get('output_file')
